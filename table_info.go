@@ -1,7 +1,6 @@
 package binrpt
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/patrickmn/go-cache"
@@ -44,6 +43,10 @@ func (tableInfo *TableInfo) Get(schema string, name string) (*Table, error) {
 		return nil, err
 	}
 
+	if colmunNames == nil {
+		return nil, nil
+	}
+
 	newTbl := &Table{
 		Schema:      schema,
 		Name:        name,
@@ -76,7 +79,7 @@ func (tableInfo *TableInfo) getColumnNames(schema string, name string) ([]string
 	rowNum := r.RowNumber()
 
 	if rowNum < 1 {
-		return nil, fmt.Errorf("Column not found: schema=%s table=%s", schema, name)
+		return nil, nil
 	}
 
 	columnNames := make([]string, rowNum)

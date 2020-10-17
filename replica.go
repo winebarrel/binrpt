@@ -138,6 +138,11 @@ func (replica *Replica) handleRowsEvent(conn *client.Conn, header *replication.E
 		return err
 	}
 
+	if table == nil {
+		log.Warnf("Table not found: %s.%s", schema, tableName)
+		return nil
+	}
+
 	if table.ColumnCount < ev.ColumnCount {
 		log.Warnf("Table column count is less than ROWS_EVENT column count (%d < %d): table=%s", table.ColumnCount, ev.ColumnCount, tableName)
 		return nil
