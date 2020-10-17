@@ -48,7 +48,7 @@ docker-compose build
 docker-compose up -d
 cp config.toml.example config.toml
 make
- ./cmd/binrpt -config config.toml
+ ./binrpt -config config.toml
  ```
 
  ```
