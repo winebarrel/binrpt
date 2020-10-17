@@ -51,7 +51,7 @@ cp config.toml.example config.toml
 ./binrpt -config config.toml
  ```
 
- ```
+ ```sql
 ~$ mysql -u root -h 127.0.0.1 -P 13307 test -e 'select * from test'
 +----+-----+-----+
 | id | num | str |
@@ -60,9 +60,13 @@ cp config.toml.example config.toml
 |  2 | 200 | bar |
 |  3 | 300 | zoo |
 +----+-----+-----+
-~$ mysql -u root -h 127.0.0.1 -P 13306 test -e 'insert into test (num, str) values (1, "abc")'
-~$ mysql -u root -h 127.0.0.1 -P 13306 test -e 'update test set num = id + 1000 where id = 2'
-~$ mysql -u root -h 127.0.0.1 -P 13306 test -e 'delete from test where id = 1'
+
+~$ mysql -u root -h 127.0.0.1 -P 13306 test
+mysql> insert into test (num, str) values (1, "abc");
+mysql> update test set num = id + 1000 where id = 2;
+mysql> delete from test where id = 1;
+mysql> exit;
+
 ~$ mysql -u root -h 127.0.0.1 -P 13307 test -e 'select * from test'
 +----+------+-----+
 | id | num  | str |
