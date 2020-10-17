@@ -1,2 +1,4 @@
 /binrpt
 /config.toml
+*.gz
+*.gz.sha1sum
