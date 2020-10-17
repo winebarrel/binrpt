@@ -139,7 +139,7 @@ func (replica *Replica) handleRowsEvent(conn *client.Conn, header *replication.E
 	}
 
 	if table.ColumnCount < ev.ColumnCount {
-		log.Warnf("Table column count is less than ROWS_EVENT column count: table=%d event=%d", table.ColumnCount, ev.ColumnCount)
+		log.Warnf("Table column count is less than ROWS_EVENT column count (%d < %d): table=%s", table.ColumnCount, ev.ColumnCount, tableName)
 		return nil
 	}
 
