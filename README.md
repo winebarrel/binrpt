@@ -37,4 +37,4 @@ username = "tiger"
 
 ## Environment variables
 
-* BINLOG_MAX_RECONNECT_ATTEMPTS
+* REPLICATE_MAX_RECONNECT_ATTEMPTS

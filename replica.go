@@ -53,6 +53,11 @@ func (replica *Replica) Repeat(evin chan Event, ctx context.Context) error {
 
 	for ev := range evin {
 		var err error
+		conn, err = replica.pingAndReconnect(conn)
+
+		if err != nil {
+			return err
+		}
 
 		if ev.RowsEvent != nil {
 			err = replica.handleRowsEvent(conn, ev.Header, ev.RowsEvent, tableInfo)
@@ -72,6 +77,38 @@ func (replica *Replica) Repeat(evin chan Event, ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (replica *Replica) pingAndReconnect(conn *client.Conn) (*client.Conn, error) {
+	err := conn.Ping()
+
+	if err == nil {
+		return conn, nil
+	}
+
+	log.Warnf("reconnect attempt: %s", err)
+	reconnCount := 0
+
+	for {
+		if replica.MaxReconnectAttempts > 0 {
+			if reconnCount >= replica.MaxReconnectAttempts {
+				break
+			}
+
+			reconnCount++
+		}
+
+		conn, err = replica.Connect()
+
+		if err == nil {
+			return conn, nil
+		}
+
+		log.Warnf("reconnect attempt: %s", err)
+		time.Sleep(1 * time.Second)
+	}
+
+	return nil, err
 }
 
 func (replica *Replica) handleRowsEvent(conn *client.Conn, header *replication.EventHeader, ev *replication.RowsEvent, tableInfo *TableInfo) error {

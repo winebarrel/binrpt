@@ -2,19 +2,18 @@ package binrpt
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 
 	"github.com/siddontang/go-mysql/client"
 	"github.com/siddontang/go-mysql/replication"
 )
 
 type ConnInfo struct {
-	Host     string
-	Port     uint16
-	Username string
-	Password string
-	Charset  string
+	Host                 string
+	Port                 uint16
+	Username             string
+	Password             string
+	Charset              string
+	MaxReconnectAttempts int
 }
 
 func (connInfo *ConnInfo) Connect() (*client.Conn, error) {
@@ -42,18 +41,6 @@ func (connInfo *ConnInfo) Ping() error {
 }
 
 func (connInfo *ConnInfo) NewBinlogSyncer(serverId uint32) (*replication.BinlogSyncer, error) {
-	maxReconnStr := os.Getenv("BINLOG_MAX_RECONNECT_ATTEMPTS")
-	maxReconn := 0
-	var err error
-
-	if maxReconnStr != "" {
-		maxReconn, err = strconv.Atoi(maxReconnStr)
-
-		if err != nil {
-			return nil, fmt.Errorf("BINLOG_MAX_RECONNECT_ATTEMPTS env parse failed: %w", err)
-		}
-	}
-
 	cfg := replication.BinlogSyncerConfig{
 		ServerID:             serverId,
 		Flavor:               "mysql",
@@ -62,7 +49,7 @@ func (connInfo *ConnInfo) NewBinlogSyncer(serverId uint32) (*replication.BinlogS
 		User:                 connInfo.Username,
 		Password:             connInfo.Password,
 		Charset:              connInfo.Charset,
-		MaxReconnectAttempts: maxReconn,
+		MaxReconnectAttempts: connInfo.MaxReconnectAttempts,
 	}
 
 	return replication.NewBinlogSyncer(cfg), nil

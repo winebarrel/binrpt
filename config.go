@@ -3,6 +3,8 @@ package binrpt
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
+	"strconv"
 
 	"github.com/pelletier/go-toml"
 )
@@ -79,6 +81,19 @@ func LoadConfig(path string) (config *Config, err error) {
 
 	if config.Replica.Port == 0 {
 		config.Replica.Port = 3306
+	}
+
+	maxReconnStr := os.Getenv("REPLICATE_MAX_RECONNECT_ATTEMPTS")
+
+	if maxReconnStr != "" {
+		maxReconn, err := strconv.Atoi(maxReconnStr)
+
+		if err != nil {
+			return nil, fmt.Errorf("REPLICATE_MAX_RECONNECT_ATTEMPTS env parse failed: %w", err)
+		}
+
+		config.Source.MaxReconnectAttempts = maxReconn
+		config.Replica.MaxReconnectAttempts = maxReconn
 	}
 
 	return config, nil

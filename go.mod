@@ -3,6 +3,7 @@ module github.com/winebarrel/binrpt
 go 1.14
 
 require (
+	github.com/go-mysql/errors v0.0.0-20180603193453-03314bea68e0
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pelletier/go-toml v1.8.1
