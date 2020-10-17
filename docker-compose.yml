@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  source:
+    build:
+      context: docker
+    environment:
+      SERVER_ID: "1"
+    ports:
+      - 13306:3306
+  replica:
+    build:
+      context: docker
+    environment:
+      SERVER_ID: "2"
+    ports:
+      - 13307:3306
