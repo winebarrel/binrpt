@@ -1,6 +1,6 @@
 SHELL   := /bin/bash
 PROGRAM := binrpt
-VERSION := v0.1.1
+VERSION := v0.1.2
 GOOS    := $(shell go env GOOS)
 GOARCH  := $(shell go env GOARCH)
 
