@@ -11,7 +11,7 @@ const (
 	DefaultPort = 3306
 )
 
-type MasterConfig struct {
+type SourceConfig struct {
 	ConnInfo
 	ServerId uint32 `toml:"server_id"`
 }
@@ -23,7 +23,7 @@ type ReplicaConfig struct {
 }
 
 type Config struct {
-	Master  MasterConfig
+	Source  SourceConfig
 	Replica ReplicaConfig
 }
 
@@ -41,24 +41,24 @@ func LoadConfig(path string) (config *Config, err error) {
 		return nil, err
 	}
 
-	if config.Master.Host == "" {
-		return nil, fmt.Errorf("config error: master.host is required")
+	if config.Source.Host == "" {
+		return nil, fmt.Errorf("config error: source.host is required")
 	}
 
-	if config.Master.Username == "" {
-		return nil, fmt.Errorf("config error: master.username is required")
+	if config.Source.Username == "" {
+		return nil, fmt.Errorf("config error: source.username is required")
 	}
 
-	if config.Master.Charset == "" {
-		return nil, fmt.Errorf("config error: master.charset is required")
+	if config.Source.Charset == "" {
+		return nil, fmt.Errorf("config error: source.charset is required")
 	}
 
-	if config.Master.ServerId <= 0 {
-		return nil, fmt.Errorf("config error: master.server_id mult be '>= 1'")
+	if config.Source.ServerId <= 0 {
+		return nil, fmt.Errorf("config error: source.server_id mult be '>= 1'")
 	}
 
-	if config.Master.Port == 0 {
-		config.Master.Port = 3306
+	if config.Source.Port == 0 {
+		config.Source.Port = 3306
 	}
 
 	if config.Replica.Host == "" {

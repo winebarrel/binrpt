@@ -8,15 +8,15 @@ import (
 )
 
 type Binlog struct {
-	*MasterConfig
+	*SourceConfig
 }
 
-func NewBinlog(config *MasterConfig) *Binlog {
+func NewBinlog(config *SourceConfig) *Binlog {
 	return &Binlog{config}
 }
 
 func (binlog *Binlog) Receive(evout chan Event, ctx context.Context) error {
-	file, pos, err := binlog.masterStatus()
+	file, pos, err := binlog.sourceStatus()
 
 	if err != nil {
 		return err
@@ -25,7 +25,7 @@ func (binlog *Binlog) Receive(evout chan Event, ctx context.Context) error {
 	return binlog.startSync(file, pos, evout, ctx)
 }
 
-func (binlog *Binlog) masterStatus() (file string, pos uint32, err error) {
+func (binlog *Binlog) sourceStatus() (file string, pos uint32, err error) {
 	conn, err := binlog.Connect()
 
 	if err != nil {

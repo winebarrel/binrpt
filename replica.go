@@ -66,7 +66,7 @@ func (replica *Replica) Repeat(evin chan Event, ctx context.Context) error {
 
 		select {
 		case <-ticker.C:
-			log.Infof("master_log_file=%s master_log_pos=%d", ev.File, ev.Header.LogPos)
+			log.Infof("log_file=%s log_pos=%d", ev.File, ev.Header.LogPos)
 		default:
 		}
 	}

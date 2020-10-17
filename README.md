@@ -17,9 +17,9 @@ Usage of binrpt:
 ## Config example
 
 ```toml
-[master]
+[source]
 charset = "utf8mb4"
-host = "master.db.example.com"
+host = "source.db.example.com"
 password = "replpwd"
 port = 3306
 server_id = 100

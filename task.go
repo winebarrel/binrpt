@@ -15,7 +15,7 @@ func NewTask(config *Config) *Task {
 }
 
 func (task *Task) Run() error {
-	binlog := NewBinlog(&task.Config.Master)
+	binlog := NewBinlog(&task.Config.Source)
 	err := binlog.Ping()
 
 	if err != nil {
