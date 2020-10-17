@@ -14,7 +14,7 @@ func NewTask(config *Config) *Task {
 	return &Task{Config: config}
 }
 
-func (task *Task) Run() error {
+func (task *Task) Run(dryrun bool) error {
 	binlog := NewBinlog(&task.Config.Source)
 	err := binlog.Ping()
 
@@ -22,7 +22,7 @@ func (task *Task) Run() error {
 		return err
 	}
 
-	replica, err := NewReplica(&task.Config.Replica)
+	replica, err := NewReplica(&task.Config.Replica, dryrun)
 
 	if err != nil {
 		return err

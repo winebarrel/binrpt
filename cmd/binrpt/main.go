@@ -14,7 +14,7 @@ func main() {
 	}
 
 	task := binrpt.NewTask(config)
-	err = task.Run()
+	err = task.Run(flags.Dryrun)
 
 	if err != nil {
 		log.Fatal(err)

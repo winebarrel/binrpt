@@ -10,11 +10,13 @@ var version string
 
 type Flags struct {
 	Config string
+	Dryrun bool
 }
 
 func parseFlags() (flags *Flags) {
 	flags = &Flags{}
 	flag.StringVar(&flags.Config, "config", "", "Config file path")
+	flag.BoolVar(&flags.Dryrun, "dryrun", false, "Dry run mode")
 	flagVersion := flag.Bool("version", false, "Print version and exit")
 	flag.Parse()
 

@@ -19,9 +19,10 @@ var ignoreQuery = regexp.MustCompile(`(?i)^begin$`)
 type Replica struct {
 	*ReplicaConfig
 	IgnoreTableFilters []*regexp.Regexp
+	Dryrun             bool
 }
 
-func NewReplica(config *ReplicaConfig) (*Replica, error) {
+func NewReplica(config *ReplicaConfig, dryrun bool) (*Replica, error) {
 	ignoreTableFilters := make([]*regexp.Regexp, len(config.ReplicateIgnoreTables))
 	var err error
 
@@ -33,7 +34,11 @@ func NewReplica(config *ReplicaConfig) (*Replica, error) {
 		}
 	}
 
-	return &Replica{ReplicaConfig: config, IgnoreTableFilters: ignoreTableFilters}, nil
+	return &Replica{
+		ReplicaConfig:      config,
+		IgnoreTableFilters: ignoreTableFilters,
+		Dryrun:             dryrun,
+	}, nil
 }
 
 func (replica *Replica) Repeat(evin chan Event, ctx context.Context) error {
@@ -141,14 +146,18 @@ func (replica *Replica) handleRowsEvent(conn *client.Conn, header *replication.E
 	sqls := sqlBld.SQLs()
 
 	for _, v := range sqls {
-		if len(v.Params) > 0 {
-			_, err = conn.Execute(v.Statement, v.Params...)
-		} else {
-			_, err = conn.Execute(v.Statement)
-		}
+		if !replica.Dryrun {
+			if len(v.Params) > 0 {
+				_, err = conn.Execute(v.Statement, v.Params...)
+			} else {
+				_, err = conn.Execute(v.Statement)
+			}
 
-		if err != nil {
-			log.Warnf("%s: %v", err, v)
+			if err != nil {
+				log.Warnf("%s: %v", err, v)
+			}
+		} else {
+			log.Infof("dry-run: %s %s", v.Statement, v.Params)
 		}
 	}
 
@@ -169,17 +178,23 @@ func (replica *Replica) handleQueryEvent(conn *client.Conn, header *replication.
 	}
 
 	useStmt := "USE " + schema
-	_, err := conn.Execute(useStmt)
 
-	if err != nil {
-		log.Warnf("%s: %s", err, useStmt)
-		return nil
-	}
+	if !replica.Dryrun {
+		_, err := conn.Execute(useStmt)
 
-	_, err = conn.Execute(query)
+		if err != nil {
+			log.Warnf("%s: %s", err, useStmt)
+			return nil
+		}
 
-	if err != nil {
-		log.Warnf("%s: %s", err, query)
+		_, err = conn.Execute(query)
+
+		if err != nil {
+			log.Warnf("%s: %s", err, query)
+		}
+	} else {
+		log.Infof("dry-run: %s", useStmt)
+		log.Infof("dry-run: %s", query)
 	}
 
 	return nil
