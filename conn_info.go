@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/siddontang/go-mysql/client"
+	"github.com/siddontang/go-mysql/replication"
 )
 
 type ConnInfo struct {
@@ -36,4 +37,18 @@ func (connInfo *ConnInfo) Ping() error {
 
 	defer conn.Close()
 	return conn.Ping()
+}
+
+func (connInfo *ConnInfo) NewBinlogSyncer(serverId uint32) *replication.BinlogSyncer {
+	cfg := replication.BinlogSyncerConfig{
+		ServerID: serverId,
+		Flavor:   "mysql",
+		Host:     connInfo.Host,
+		Port:     connInfo.Port,
+		User:     connInfo.Username,
+		Password: connInfo.Password,
+		Charset:  connInfo.Charset,
+	}
+
+	return replication.NewBinlogSyncer(cfg)
 }

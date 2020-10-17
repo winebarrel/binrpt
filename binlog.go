@@ -52,16 +52,7 @@ func (binlog *Binlog) masterStatus() (file string, pos uint32, err error) {
 }
 
 func (binlog *Binlog) startSync(file string, pos uint32, evout chan Event, ctx context.Context) error {
-	cfg := replication.BinlogSyncerConfig{
-		ServerID: binlog.ServerId,
-		Flavor:   "mysql",
-		Host:     binlog.Host,
-		Port:     binlog.Port,
-		User:     binlog.Username,
-		Password: binlog.Password,
-	}
-
-	syncer := replication.NewBinlogSyncer(cfg)
+	syncer := binlog.NewBinlogSyncer(binlog.ServerId)
 	defer syncer.Close()
 	streamer, err := syncer.StartSync(mysql.Position{Name: file, Pos: pos})
 
