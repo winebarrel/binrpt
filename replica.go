@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	LogPosInterval = 1 * time.Minute
+	LogPosInterval    = 1 * time.Minute
+	ReconnectInterval = 1 * time.Second
 )
 
 var ignoreQuery = regexp.MustCompile(`(?i)^begin$`)
@@ -110,7 +111,7 @@ func (replica *Replica) pingAndReconnect(conn *client.Conn) (*client.Conn, error
 		}
 
 		log.Warnf("reconnect attempt: %s", err)
-		time.Sleep(1 * time.Second)
+		time.Sleep(ReconnectInterval)
 	}
 
 	return nil, err
