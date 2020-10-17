@@ -49,6 +49,10 @@ func LoadConfig(path string) (config *Config, err error) {
 		return nil, fmt.Errorf("config error: master.username is required")
 	}
 
+	if config.Master.Charset == "" {
+		return nil, fmt.Errorf("config error: master.charset is required")
+	}
+
 	if config.Master.ServerId <= 0 {
 		return nil, fmt.Errorf("config error: master.server_id mult be '>= 1'")
 	}
@@ -67,6 +71,10 @@ func LoadConfig(path string) (config *Config, err error) {
 
 	if config.Replica.ReplicateDoDB == "" {
 		return nil, fmt.Errorf("config error: replica.replicate_do_db is required")
+	}
+
+	if config.Replica.Charset == "" {
+		return nil, fmt.Errorf("config error: replica.charset is required")
 	}
 
 	if config.Replica.Port == 0 {

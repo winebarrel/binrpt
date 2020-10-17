@@ -18,6 +18,7 @@ Usage of binrpt:
 
 ```toml
 [master]
+charset = "utf8mb4"
 host = "master.db.example.com"
 password = "replpwd"
 port = 3306
@@ -25,6 +26,7 @@ server_id = 100
 username = "repl"
 
 [replica]
+charset = "utf8mb4"
 host = "replica.db.example.com"
 password = "scott"
 port = 3306

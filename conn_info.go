@@ -11,11 +11,20 @@ type ConnInfo struct {
 	Port     uint16
 	Username string
 	Password string
+	Charset  string
 }
 
 func (connInfo *ConnInfo) Connect() (*client.Conn, error) {
 	hostPort := fmt.Sprintf("%s:%d", connInfo.Host, connInfo.Port)
-	return client.Connect(hostPort, connInfo.Username, connInfo.Password, "")
+	conn, err := client.Connect(hostPort, connInfo.Username, connInfo.Password, "")
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = conn.SetCharset(connInfo.Charset)
+
+	return conn, err
 }
 
 func (connInfo *ConnInfo) Ping() error {
