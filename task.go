@@ -22,7 +22,7 @@ func (task *Task) Run() error {
 		return err
 	}
 
-	replica, err := NewReplica(&task.Config.Replica, task.Config.Filters)
+	replica, err := NewReplica(&task.Config.Replica)
 
 	if err != nil {
 		return err

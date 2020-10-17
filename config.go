@@ -18,17 +18,13 @@ type MasterConfig struct {
 
 type ReplicaConfig struct {
 	ConnInfo
-	ReplicateDoDB string `toml:"replicate_do_db"`
-}
-
-type Filter struct {
-	IgnoreTable string `toml:"ignore_table"`
+	ReplicateDoDB         string   `toml:"replicate_do_db"`
+	ReplicateIgnoreTables []string `toml:"replicate_ignore_tables"`
 }
 
 type Config struct {
 	Master  MasterConfig
 	Replica ReplicaConfig
-	Filters []Filter
 }
 
 func LoadConfig(path string) (config *Config, err error) {

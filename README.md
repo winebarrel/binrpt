@@ -19,8 +19,6 @@ host = "replica.db.example.com"
 password = "scott"
 port = 3306
 replicate_do_db = "test"
+replicate_ignore_tables = ["^secure_"]
 username = "tiger"
-
-[[filters]]
-ignore_table = "^secure_"
 ```

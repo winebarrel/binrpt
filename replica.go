@@ -21,12 +21,12 @@ type Replica struct {
 	IgnoreTableFilters []*regexp.Regexp
 }
 
-func NewReplica(config *ReplicaConfig, filters []Filter) (*Replica, error) {
-	ignoreTableFilters := make([]*regexp.Regexp, len(filters))
+func NewReplica(config *ReplicaConfig) (*Replica, error) {
+	ignoreTableFilters := make([]*regexp.Regexp, len(config.ReplicateIgnoreTables))
 	var err error
 
-	for i, v := range filters {
-		ignoreTableFilters[i], err = regexp.Compile(v.IgnoreTable)
+	for i, v := range config.ReplicateIgnoreTables {
+		ignoreTableFilters[i], err = regexp.Compile(v)
 
 		if err != nil {
 			return nil, err
