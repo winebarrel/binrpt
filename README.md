@@ -46,8 +46,8 @@ username = "tiger"
 ```sh
 docker-compose build
 docker-compose up -d
-cp config.toml.example config.toml
 make
+cp config.toml.example config.toml
 ./binrpt -config config.toml
  ```
 
