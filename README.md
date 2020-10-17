@@ -22,7 +22,7 @@ charset = "utf8mb4"
 host = "source.db.example.com"
 password = "replpwd"
 port = 3306
-server_id = 100
+replicate_server_id = 100
 username = "repl"
 
 [replica]

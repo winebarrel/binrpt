@@ -13,7 +13,7 @@ const (
 
 type SourceConfig struct {
 	ConnInfo
-	ServerId uint32 `toml:"server_id"`
+	ReplicateServerId uint32 `toml:"replicate_server_id"`
 }
 
 type ReplicaConfig struct {
@@ -53,8 +53,8 @@ func LoadConfig(path string) (config *Config, err error) {
 		return nil, fmt.Errorf("config error: source.charset is required")
 	}
 
-	if config.Source.ServerId <= 0 {
-		return nil, fmt.Errorf("config error: source.server_id mult be '>= 1'")
+	if config.Source.ReplicateServerId <= 0 {
+		return nil, fmt.Errorf("config error: source.replicate_server_id mult be '>= 1'")
 	}
 
 	if config.Source.Port == 0 {

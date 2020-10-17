@@ -1,0 +1,16 @@
+[source]
+charset = "utf8mb4"
+host = "127.0.0.1"
+password = ""
+port = 13306
+replicate_server_id = 100
+username = "root"
+
+[replica]
+charset = "utf8mb4"
+host = "127.0.0.1"
+password = ""
+port = 13307
+replicate_do_db = "test"
+replicate_ignore_tables = ["^secure_"]
+username = "root"
