@@ -34,3 +34,7 @@ replicate_do_db = "test"
 replicate_ignore_tables = ["^secure_"]
 username = "tiger"
 ```
+
+## Environment variables
+
+* BINLOG_MAX_RECONNECT_ATTEMPTS
