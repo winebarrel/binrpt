@@ -9,6 +9,11 @@ import (
 
 func main() {
 	flags := parseFlags()
+
+	if flags.Debug {
+		log.SetLevel(log.LevelDebug)
+	}
+
 	config, err := binrpt.LoadConfig(flags.Config)
 
 	if err != nil {

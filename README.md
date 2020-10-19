@@ -10,6 +10,8 @@ binrpt is a daemon that reads MySQL binlog and executes replication SQL.
 Usage of binrpt:
   -config string
     	Config file path
+  -debug
+    	Debug mode
   -dryrun
     	Dry-run mode
   -version

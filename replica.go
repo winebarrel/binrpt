@@ -154,6 +154,8 @@ func (replica *Replica) handleRowsEvent(conn *client.Conn, header *replication.E
 
 	for _, v := range sqls {
 		if !replica.Dryrun {
+			log.Debugf("execute: %s %s", v.Statement, v.Params)
+
 			if len(v.Params) > 0 {
 				_, err = conn.Execute(v.Statement, v.Params...)
 			} else {
@@ -187,6 +189,9 @@ func (replica *Replica) handleQueryEvent(conn *client.Conn, header *replication.
 	useStmt := "USE " + schema
 
 	if !replica.Dryrun {
+		log.Debugf("execute: %s", useStmt)
+		log.Debugf("execute: %s", query)
+
 		_, err := conn.Execute(useStmt)
 
 		if err != nil {
