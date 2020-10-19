@@ -15,7 +15,7 @@ const (
 	ReconnectInterval = 1 * time.Second
 )
 
-var ignoreQuery = regexp.MustCompile(`(?i)^begin$`)
+var ignoreQuery = regexp.MustCompile(`(?i)^(begin$|grant|revoke|create\s+user|drop\s+user)`)
 
 type Replica struct {
 	*ReplicaConfig
