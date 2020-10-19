@@ -54,21 +54,21 @@ func (sqlBld *SQLBuilder) SQLs() []*SQL {
 
 func (sqlBld *SQLBuilder) buildInsertSQL(values []interface{}) (string, []interface{}) {
 	var builder strings.Builder
-	builder.WriteString("INSERT INTO ")
+	builder.WriteString("INSERT INTO `")
 	builder.WriteString(sqlBld.Table.Schema)
-	builder.WriteString(".")
+	builder.WriteString("`.`")
 	builder.WriteString(sqlBld.Table.Name)
-	builder.WriteString("(")
+	builder.WriteString("` (`")
 
 	for i := 0; i < len(values); i++ {
 		builder.WriteString(sqlBld.Table.ColumnNames[i])
 
 		if i < len(values)-1 {
-			builder.WriteString(", ")
+			builder.WriteString("`, `")
 		}
 	}
 
-	builder.WriteString(") VALUES (")
+	builder.WriteString("`) VALUES (")
 
 	for i := 0; i < len(values); i++ {
 		builder.WriteString("?")
@@ -88,18 +88,18 @@ func (sqlBld *SQLBuilder) buildUpdateSQL(whereVals, setVals []interface{}) (stri
 	params = append(params, setVals...)
 
 	var builder strings.Builder
-	builder.WriteString("UPDATE ")
+	builder.WriteString("UPDATE `")
 	builder.WriteString(sqlBld.Table.Schema)
-	builder.WriteString(".")
+	builder.WriteString("`.`")
 	builder.WriteString(sqlBld.Table.Name)
-	builder.WriteString(" SET ")
+	builder.WriteString("` SET `")
 
 	for i := 0; i < len(setVals); i++ {
 		builder.WriteString(sqlBld.Table.ColumnNames[i])
-		builder.WriteString(" = ?")
+		builder.WriteString("` = ?")
 
 		if i < len(setVals)-1 {
-			builder.WriteString(", ")
+			builder.WriteString(", `")
 		}
 	}
 
@@ -118,11 +118,11 @@ func (sqlBld *SQLBuilder) buildDeleteSQL(values []interface{}) (string, []interf
 	whereStmt, params := sqlBld.buildWhereClause(values)
 
 	var builder strings.Builder
-	builder.WriteString("DELETE FROM ")
+	builder.WriteString("DELETE FROM `")
 	builder.WriteString(sqlBld.Table.Schema)
-	builder.WriteString(".")
+	builder.WriteString("`.`")
 	builder.WriteString(sqlBld.Table.Name)
-	builder.WriteString(" ")
+	builder.WriteString("` ")
 	builder.WriteString(whereStmt)
 
 	return builder.String(), params
