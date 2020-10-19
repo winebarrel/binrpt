@@ -2,6 +2,7 @@ package binrpt
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"time"
 
@@ -48,7 +49,7 @@ func (replica *Replica) Repeat(evin chan Event, ctx context.Context) error {
 	conn, err := replica.Connect()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Unable to connect to Replica: %w", err)
 	}
 
 	defer conn.Close()
@@ -62,7 +63,7 @@ func (replica *Replica) Repeat(evin chan Event, ctx context.Context) error {
 		conn, err = replica.pingAndReconnect(conn)
 
 		if err != nil {
-			return err
+			return fmt.Errorf("Lost connection with Replica: %w", err)
 		}
 
 		if ev.RowsEvent != nil {
@@ -72,7 +73,7 @@ func (replica *Replica) Repeat(evin chan Event, ctx context.Context) error {
 		}
 
 		if err != nil {
-			return err
+			return fmt.Errorf("Failed to handle event: %w", err)
 		}
 
 		select {

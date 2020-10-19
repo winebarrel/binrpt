@@ -2,6 +2,7 @@ package binrpt
 
 import (
 	"context"
+	"fmt"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -25,13 +26,13 @@ func (task *Task) Run(dryrun bool) error {
 	replica, err := NewReplica(&task.Config.Replica, dryrun)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to create Replica instance: %w", err)
 	}
 
 	err = replica.Ping()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Replica did not respond to pin: %w", err)
 	}
 
 	evch := make(chan Event)
