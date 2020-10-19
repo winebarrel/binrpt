@@ -58,14 +58,14 @@ func (binlog *Binlog) startSync(file string, pos uint32, evout chan Event, ctx c
 	streamer, err := syncer.StartSync(mysql.Position{Name: file, Pos: pos})
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to start syncing binlog: %w", err)
 	}
 
 	for {
 		ev, err := streamer.GetEvent(ctx)
 
 		if err != nil {
-			return err
+			return fmt.Errorf("Failed to get binlog event: %w", err)
 		}
 
 		switch ev.Header.EventType {
