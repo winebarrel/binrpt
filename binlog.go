@@ -2,6 +2,7 @@ package binrpt
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
@@ -19,7 +20,7 @@ func (binlog *Binlog) Receive(evout chan Event, ctx context.Context) error {
 	file, pos, err := binlog.sourceStatus()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to get binlog status: %w", err)
 	}
 
 	return binlog.startSync(file, pos, evout, ctx)
