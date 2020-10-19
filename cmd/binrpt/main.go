@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/siddontang/go-log/log"
 	"github.com/winebarrel/binrpt"
 )
@@ -10,7 +12,7 @@ func main() {
 	config, err := binrpt.LoadConfig(flags.Config)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("Failed to load config: %w", err))
 	}
 
 	task := binrpt.NewTask(config)
