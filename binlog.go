@@ -53,12 +53,7 @@ func (binlog *Binlog) sourceStatus() (file string, pos uint32, err error) {
 }
 
 func (binlog *Binlog) startSync(file string, pos uint32, evout chan Event, ctx context.Context) error {
-	syncer, err := binlog.NewBinlogSyncer(binlog.ReplicateServerId)
-
-	if err != nil {
-		return err
-	}
-
+	syncer := binlog.NewBinlogSyncer(binlog.ReplicateServerId)
 	defer syncer.Close()
 	streamer, err := syncer.StartSync(mysql.Position{Name: file, Pos: pos})
 

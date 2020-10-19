@@ -40,7 +40,7 @@ func (connInfo *ConnInfo) Ping() error {
 	return conn.Ping()
 }
 
-func (connInfo *ConnInfo) NewBinlogSyncer(serverId uint32) (*replication.BinlogSyncer, error) {
+func (connInfo *ConnInfo) NewBinlogSyncer(serverId uint32) *replication.BinlogSyncer {
 	cfg := replication.BinlogSyncerConfig{
 		ServerID:             serverId,
 		Flavor:               "mysql",
@@ -52,5 +52,5 @@ func (connInfo *ConnInfo) NewBinlogSyncer(serverId uint32) (*replication.BinlogS
 		MaxReconnectAttempts: connInfo.MaxReconnectAttempts,
 	}
 
-	return replication.NewBinlogSyncer(cfg), nil
+	return replication.NewBinlogSyncer(cfg)
 }
