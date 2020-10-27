@@ -77,6 +77,7 @@ func (tableInfo *TableInfo) getColumnNames(schema string, name string) ([]string
 		return nil, err
 	}
 
+	defer rows.Close()
 	columnNames := []string{}
 
 	for rows.Next() {

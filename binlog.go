@@ -46,6 +46,7 @@ func (binlog *Binlog) sourceStatus() (file string, pos uint32, err error) {
 		return
 	}
 
+	defer rows.Close()
 	columns, err := rows.Columns()
 
 	if err != nil {
