@@ -20,7 +20,7 @@ func (task *Task) Run(dryrun bool) error {
 	err := binlog.Ping()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to create Binlog instance: %w", err)
 	}
 
 	replica, err := NewReplica(&task.Config.Replica, dryrun)

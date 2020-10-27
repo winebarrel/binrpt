@@ -1,9 +1,11 @@
 package binrpt
 
 import (
+	"database/sql"
 	"fmt"
+	"time"
 
-	"github.com/siddontang/go-mysql/client"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/siddontang/go-mysql/replication"
 )
 
@@ -16,17 +18,20 @@ type ConnInfo struct {
 	MaxReconnectAttempts int
 }
 
-func (connInfo *ConnInfo) Connect() (*client.Conn, error) {
-	hostPort := fmt.Sprintf("%s:%d", connInfo.Host, connInfo.Port)
-	conn, err := client.Connect(hostPort, connInfo.Username, connInfo.Password, "")
+func (connInfo *ConnInfo) Connect() (*sql.DB, error) {
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/?charset=%s",
+		connInfo.Username, connInfo.Password, connInfo.Host, connInfo.Port, connInfo.Charset)
+	conn, err := sql.Open("mysql", dsn)
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = conn.SetCharset(connInfo.Charset)
+	conn.SetConnMaxLifetime(1 * time.Hour)
+	conn.SetMaxOpenConns(1)
+	conn.SetMaxIdleConns(1)
 
-	return conn, err
+	return conn, nil
 }
 
 func (connInfo *ConnInfo) Ping() error {

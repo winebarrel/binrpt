@@ -1,10 +1,11 @@
 package binrpt
 
 import (
+	"database/sql"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/patrickmn/go-cache"
-	"github.com/siddontang/go-mysql/client"
 )
 
 const (
@@ -14,7 +15,7 @@ const (
 
 type TableInfo struct {
 	Cache *cache.Cache
-	Conn  *client.Conn
+	Conn  *sql.DB
 }
 
 type Table struct {
@@ -24,7 +25,7 @@ type Table struct {
 	ColumnCount uint64
 }
 
-func NewTableInfo(conn *client.Conn) *TableInfo {
+func NewTableInfo(conn *sql.DB) *TableInfo {
 	c := cache.New(5*time.Minute, 10*time.Minute)
 	return &TableInfo{Cache: c, Conn: conn}
 }
@@ -60,7 +61,7 @@ func (tableInfo *TableInfo) Get(schema string, name string) (*Table, error) {
 }
 
 func (tableInfo *TableInfo) getColumnNames(schema string, name string) ([]string, error) {
-	r, err := tableInfo.Conn.Execute(`
+	rows, err := tableInfo.Conn.Query(`
 		SELECT
 			COLUMN_NAME
 		FROM
@@ -76,20 +77,22 @@ func (tableInfo *TableInfo) getColumnNames(schema string, name string) ([]string
 		return nil, err
 	}
 
-	rowNum := r.RowNumber()
+	defer rows.Close()
+	columnNames := []string{}
 
-	if rowNum < 1 {
-		return nil, nil
-	}
-
-	columnNames := make([]string, rowNum)
-
-	for i := 0; i < rowNum; i++ {
-		columnNames[i], err = r.GetString(i, 0)
+	for rows.Next() {
+		var colName string
+		err = rows.Scan(&colName)
 
 		if err != nil {
 			return nil, err
 		}
+
+		columnNames = append(columnNames, colName)
+	}
+
+	if len(columnNames) == 0 {
+		return nil, nil
 	}
 
 	return columnNames, nil
