@@ -8,6 +8,12 @@ import (
 	"github.com/siddontang/go-mysql/replication"
 )
 
+type TrashScanner struct{}
+
+func (TrashScanner) Scan(interface{}) error {
+	return nil
+}
+
 type Binlog struct {
 	*SourceConfig
 }
@@ -34,20 +40,33 @@ func (binlog *Binlog) sourceStatus() (file string, pos uint32, err error) {
 	}
 
 	defer conn.Close()
-	r, err := conn.Execute("show master status")
+	rows, err := conn.Query("show master status")
 
 	if err != nil {
 		return
 	}
 
-	file, err = r.GetString(0, 0)
+	columns, err := rows.Columns()
 
 	if err != nil {
 		return
 	}
 
-	pos64, err := r.GetUint(0, 1)
-	pos = uint32(pos64)
+	colLen := len(columns)
+	dest := make([]interface{}, colLen)
+	dest[0] = &file
+	dest[1] = &pos
+
+	for i := 2; i < colLen; i++ {
+		dest[i] = TrashScanner{}
+	}
+
+	rows.Next()
+	err = rows.Scan(dest...)
+
+	if err != nil {
+		return
+	}
 
 	return
 }

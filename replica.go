@@ -2,13 +2,13 @@ package binrpt
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"regexp"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/siddontang/go-log/log"
-	"github.com/siddontang/go-mysql/client"
-	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
 )
 
@@ -87,7 +87,7 @@ func (replica *Replica) Repeat(evin chan Event, ctx context.Context) error {
 	return nil
 }
 
-func (replica *Replica) pingAndReconnect(conn *client.Conn) (*client.Conn, error) {
+func (replica *Replica) pingAndReconnect(conn *sql.DB) (*sql.DB, error) {
 	err := conn.Ping()
 
 	if err == nil {
@@ -119,7 +119,7 @@ func (replica *Replica) pingAndReconnect(conn *client.Conn) (*client.Conn, error
 	return nil, err
 }
 
-func (replica *Replica) handleRowsEvent(conn *client.Conn, header *replication.EventHeader, ev *replication.RowsEvent, tableInfo *TableInfo) error {
+func (replica *Replica) handleRowsEvent(conn *sql.DB, header *replication.EventHeader, ev *replication.RowsEvent, tableInfo *TableInfo) error {
 	schema := string(ev.Table.Schema)
 
 	if schema != replica.ReplicateDoDB {
@@ -156,18 +156,15 @@ func (replica *Replica) handleRowsEvent(conn *client.Conn, header *replication.E
 	for _, v := range sqls {
 		if !replica.Dryrun {
 			log.Debugf("execute: %s %s", v.Statement, v.Params)
-			var r *mysql.Result
 
 			if len(v.Params) > 0 {
-				r, err = conn.Execute(v.Statement, v.Params...)
+				_, err = conn.Exec(v.Statement, v.Params...)
 			} else {
-				r, err = conn.Execute(v.Statement)
+				_, err = conn.Exec(v.Statement)
 			}
 
 			if err != nil {
 				log.Warnf("%s: %v", err, v)
-			} else {
-				defer r.Close()
 			}
 		} else {
 			log.Infof("dry-run: %s %s", v.Statement, v.Params)
@@ -177,7 +174,7 @@ func (replica *Replica) handleRowsEvent(conn *client.Conn, header *replication.E
 	return nil
 }
 
-func (replica *Replica) handleQueryEvent(conn *client.Conn, header *replication.EventHeader, ev *replication.QueryEvent) error {
+func (replica *Replica) handleQueryEvent(conn *sql.DB, header *replication.EventHeader, ev *replication.QueryEvent) error {
 	schema := string(ev.Schema)
 
 	if schema != replica.ReplicateDoDB {
@@ -196,21 +193,17 @@ func (replica *Replica) handleQueryEvent(conn *client.Conn, header *replication.
 		log.Debugf("execute: %s", useStmt)
 		log.Debugf("execute: %s", query)
 
-		ur, err := conn.Execute(useStmt)
+		_, err := conn.Exec(useStmt)
 
 		if err != nil {
 			log.Warnf("%s: %s", err, useStmt)
 			return nil
 		}
 
-		defer ur.Close()
-
-		qr, err := conn.Execute(query)
+		_, err = conn.Exec(query)
 
 		if err != nil {
 			log.Warnf("%s: %s", err, query)
-		} else {
-			defer qr.Close()
 		}
 	} else {
 		log.Infof("dry-run: %s", useStmt)
