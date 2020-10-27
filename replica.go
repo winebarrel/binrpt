@@ -8,6 +8,7 @@ import (
 
 	"github.com/siddontang/go-log/log"
 	"github.com/siddontang/go-mysql/client"
+	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
 )
 
@@ -155,15 +156,18 @@ func (replica *Replica) handleRowsEvent(conn *client.Conn, header *replication.E
 	for _, v := range sqls {
 		if !replica.Dryrun {
 			log.Debugf("execute: %s %s", v.Statement, v.Params)
+			var r *mysql.Result
 
 			if len(v.Params) > 0 {
-				_, err = conn.Execute(v.Statement, v.Params...)
+				r, err = conn.Execute(v.Statement, v.Params...)
 			} else {
-				_, err = conn.Execute(v.Statement)
+				r, err = conn.Execute(v.Statement)
 			}
 
 			if err != nil {
 				log.Warnf("%s: %v", err, v)
+			} else {
+				defer r.Close()
 			}
 		} else {
 			log.Infof("dry-run: %s %s", v.Statement, v.Params)
@@ -192,17 +196,21 @@ func (replica *Replica) handleQueryEvent(conn *client.Conn, header *replication.
 		log.Debugf("execute: %s", useStmt)
 		log.Debugf("execute: %s", query)
 
-		_, err := conn.Execute(useStmt)
+		ur, err := conn.Execute(useStmt)
 
 		if err != nil {
 			log.Warnf("%s: %s", err, useStmt)
 			return nil
 		}
 
-		_, err = conn.Execute(query)
+		defer ur.Close()
+
+		qr, err := conn.Execute(query)
 
 		if err != nil {
 			log.Warnf("%s: %s", err, query)
+		} else {
+			defer qr.Close()
 		}
 	} else {
 		log.Infof("dry-run: %s", useStmt)
