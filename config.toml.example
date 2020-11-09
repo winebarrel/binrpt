@@ -5,6 +5,7 @@ password = ""
 port = 13306
 replicate_server_id = 100
 username = "root"
+#continue_from_prev_binlog = false
 
 [replica]
 charset = "utf8mb4"

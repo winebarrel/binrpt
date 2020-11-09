@@ -23,7 +23,15 @@ func NewBinlog(config *SourceConfig) *Binlog {
 }
 
 func (binlog *Binlog) Receive(evout chan Event, ctx context.Context) error {
-	file, pos, err := binlog.sourceStatus()
+	var file string
+	var pos uint32
+	var err error
+
+	if binlog.ContinueFromPrevBinlog {
+		file, pos, err = binlog.sourcePrevBinlogLast()
+	} else {
+		file, pos, err = binlog.sourceStatus()
+	}
 
 	if err != nil {
 		return fmt.Errorf("Failed to get binlog status: %w", err)
@@ -67,6 +75,56 @@ func (binlog *Binlog) sourceStatus() (file string, pos uint32, err error) {
 
 	if err != nil {
 		return
+	}
+
+	return
+}
+
+func (binlog *Binlog) sourcePrevBinlogLast() (file string, pos uint32, err error) {
+	conn, err := binlog.Connect()
+
+	if err != nil {
+		return
+	}
+
+	defer conn.Close()
+	rows, err := conn.Query("show master logs")
+
+	if err != nil {
+		return
+	}
+
+	defer rows.Close()
+	columns, err := rows.Columns()
+
+	if err != nil {
+		return
+	}
+
+	var curFile string
+	var curPos uint32
+
+	colLen := len(columns)
+	dest := make([]interface{}, colLen)
+	dest[0] = &curFile
+	dest[1] = &curPos
+
+	for i := 2; i < colLen; i++ {
+		dest[i] = TrashScanner{}
+	}
+
+	for rows.Next() {
+		file = curFile
+		pos = curPos
+		err = rows.Scan(dest...)
+
+		if err != nil {
+			return
+		}
+	}
+
+	if file == "" {
+		err = fmt.Errorf("Failed to get previous binlog position")
 	}
 
 	return
