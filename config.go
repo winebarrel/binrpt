@@ -15,7 +15,8 @@ const (
 
 type SourceConfig struct {
 	ConnInfo
-	ReplicateServerId uint32 `toml:"replicate_server_id"`
+	ReplicateServerId      uint32 `toml:"replicate_server_id"`
+	ContinueFromPrevBinlog bool   `toml:"continue_from_prev_binlog"`
 }
 
 type ReplicaConfig struct {
