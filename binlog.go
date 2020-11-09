@@ -27,8 +27,8 @@ func (binlog *Binlog) Receive(evout chan Event, ctx context.Context) error {
 	var pos uint32
 	var err error
 
-	if binlog.ContinueFromPrevBinlog {
-		file, pos, err = binlog.sourcePrevBinlogLast()
+	if binlog.BinlogBufferNum > 0 {
+		file, pos, err = binlog.sourcePrevBinlogLast(int(binlog.BinlogBufferNum))
 	} else {
 		file, pos, err = binlog.sourceStatus()
 	}
@@ -80,7 +80,12 @@ func (binlog *Binlog) sourceStatus() (file string, pos uint32, err error) {
 	return
 }
 
-func (binlog *Binlog) sourcePrevBinlogLast() (file string, pos uint32, err error) {
+type binlogFilePos struct {
+	File string
+	Pos  uint32
+}
+
+func (binlog *Binlog) sourcePrevBinlogLast(bufNum int) (file string, pos uint32, err error) {
 	conn, err := binlog.Connect()
 
 	if err != nil {
@@ -101,6 +106,8 @@ func (binlog *Binlog) sourcePrevBinlogLast() (file string, pos uint32, err error
 		return
 	}
 
+	filePosList := []binlogFilePos{}
+
 	var curFile string
 	var curPos uint32
 
@@ -114,18 +121,26 @@ func (binlog *Binlog) sourcePrevBinlogLast() (file string, pos uint32, err error
 	}
 
 	for rows.Next() {
-		file = curFile
-		pos = curPos
 		err = rows.Scan(dest...)
 
 		if err != nil {
 			return
 		}
+
+		filePos := binlogFilePos{File: curFile, Pos: curPos}
+		filePosList = append(filePosList, filePos)
 	}
 
-	if file == "" {
+	filePosListLen := len(filePosList)
+	fmt.Println(filePosList)
+
+	if filePosListLen <= bufNum {
 		err = fmt.Errorf("Failed to get previous binlog position")
 	}
+
+	startFilePos := filePosList[filePosListLen-(1+bufNum)]
+	file = startFilePos.File
+	pos = startFilePos.Pos
 
 	return
 }

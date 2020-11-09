@@ -28,7 +28,7 @@ password = "replpwd"
 port = 3306
 replicate_server_id = 100
 username = "repl"
-#continue_from_prev_binlog = false
+#binlog_buffer_num = 0
 
 [replica]
 charset = "utf8mb4"
