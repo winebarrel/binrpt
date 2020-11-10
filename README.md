@@ -38,6 +38,7 @@ port = 3306
 replicate_do_db = "test"
 replicate_ignore_tables = ["^secure_"]
 username = "tiger"
+#save_status = false
 ```
 
 ## Environment variables
