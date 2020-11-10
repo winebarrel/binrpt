@@ -82,6 +82,14 @@ func (replica *Replica) Repeat(evin chan Event, ctx context.Context) error {
 			log.Infof("log_file=%s log_pos=%d", ev.File, ev.Header.LogPos)
 		default:
 		}
+
+		if replica.SaveStatus {
+			err = replica.saveBinlogFilePos(conn, ev.File, ev.Header.LogPos)
+
+			if err != nil {
+				return fmt.Errorf("Failed to save status: %w", err)
+			}
+		}
 	}
 
 	return nil
@@ -211,4 +219,45 @@ func (replica *Replica) handleQueryEvent(conn *sql.DB, header *replication.Event
 	}
 
 	return nil
+}
+
+func (replica *Replica) saveBinlogFilePos(conn *sql.DB, file string, pos uint32) error {
+	_, err := conn.Exec(
+		"insert into "+BinlogStatusDB+"."+BinlogStatusTable+
+			" (id, file, position) values (1, ?, ?) on duplicate key update file = ?, position = ?",
+		file,
+		pos,
+		file,
+		pos,
+	)
+
+	return err
+}
+
+func (replica *Replica) LoadBinlogFilePos() (file string, pos uint32, err error) {
+	conn, err := replica.Connect()
+
+	if err != nil {
+		return
+	}
+
+	defer conn.Close()
+
+	rows, err := conn.Query("select file, position from " + BinlogStatusDB + "." + BinlogStatusTable + " where id = 1")
+
+	if err != nil {
+		return
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(&file, &pos)
+
+		if err != nil {
+			return
+		}
+	}
+
+	return
 }

@@ -29,6 +29,7 @@ port = 3306
 replicate_server_id = 100
 username = "repl"
 #binlog_buffer_num = 0
+#load_status = false
 
 [replica]
 charset = "utf8mb4"
@@ -38,6 +39,7 @@ port = 3306
 replicate_do_db = "test"
 replicate_ignore_tables = ["^secure_"]
 username = "tiger"
+#save_status = false
 ```
 
 ## Environment variables

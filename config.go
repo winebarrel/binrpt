@@ -10,19 +10,23 @@ import (
 )
 
 const (
-	DefaultPort = 3306
+	DefaultPort       = 3306
+	BinlogStatusDB    = "binrpt"
+	BinlogStatusTable = "replica_status"
 )
 
 type SourceConfig struct {
 	ConnInfo
 	ReplicateServerId uint32 `toml:"replicate_server_id"`
 	BinlogBufferNum   uint32 `toml:"binlog_buffer_num"`
+	LoadStatus        bool   `toml:"load_status"`
 }
 
 type ReplicaConfig struct {
 	ConnInfo
 	ReplicateDoDB         string   `toml:"replicate_do_db"`
 	ReplicateIgnoreTables []string `toml:"replicate_ignore_tables"`
+	SaveStatus            bool     `toml:"save_status"`
 }
 
 type Config struct {
