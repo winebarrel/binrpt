@@ -132,7 +132,6 @@ func (binlog *Binlog) sourcePrevBinlogLast(bufNum int) (file string, pos uint32,
 	}
 
 	filePosListLen := len(filePosList)
-	fmt.Println(filePosList)
 
 	if filePosListLen <= bufNum {
 		err = fmt.Errorf("Failed to get previous binlog position")
