@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/siddontang/go-log/log"
+
 	"golang.org/x/sync/errgroup"
 )
 
@@ -36,15 +38,31 @@ func (task *Task) Run(dryrun bool) error {
 	}
 
 	evch := make(chan Event)
-	eg, ctx := errgroup.WithContext(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
+	eg, etCtx := errgroup.WithContext(ctx)
 
 	eg.Go(func() error {
-		return replica.Repeat(evch, ctx)
+		defer func() {
+			cancel()
+
+			// Skip events
+			for ev := range evch {
+				_ = ev
+			}
+		}()
+
+		err := replica.Repeat(evch, etCtx)
+
+		if err != nil {
+			log.Errorf("Faild to repeat binlog: %s", err)
+		}
+
+		return err
 	})
 
 	eg.Go(func() error {
 		defer close(evch)
-		return binlog.Receive(evch, ctx)
+		return binlog.Receive(evch, etCtx)
 	})
 
 	return eg.Wait()
