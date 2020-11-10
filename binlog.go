@@ -22,19 +22,19 @@ func NewBinlog(config *SourceConfig) *Binlog {
 	return &Binlog{config}
 }
 
-func (binlog *Binlog) Receive(evout chan Event, ctx context.Context) error {
-	var file string
-	var pos uint32
+func (binlog *Binlog) Receive(evout chan Event, ctx context.Context, file string, pos uint32) error {
 	var err error
 
-	if binlog.BinlogBufferNum > 0 {
-		file, pos, err = binlog.sourcePrevBinlogLast(int(binlog.BinlogBufferNum))
-	} else {
-		file, pos, err = binlog.sourceStatus()
-	}
+	if file == "" {
+		if binlog.BinlogBufferNum > 0 {
+			file, pos, err = binlog.sourcePrevBinlogLast(int(binlog.BinlogBufferNum))
+		} else {
+			file, pos, err = binlog.sourceStatus()
+		}
 
-	if err != nil {
-		return fmt.Errorf("Failed to get binlog status: %w", err)
+		if err != nil {
+			return fmt.Errorf("Failed to get binlog status: %w", err)
+		}
 	}
 
 	return binlog.startSync(file, pos, evout, ctx)

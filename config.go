@@ -19,7 +19,6 @@ type SourceConfig struct {
 	ConnInfo
 	ReplicateServerId uint32 `toml:"replicate_server_id"`
 	BinlogBufferNum   uint32 `toml:"binlog_buffer_num"`
-	LoadStatus        bool   `toml:"load_status"`
 }
 
 type ReplicaConfig struct {
