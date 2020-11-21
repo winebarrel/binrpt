@@ -62,7 +62,7 @@ func (task *Task) Run(dryrun bool) error {
 			}
 		}()
 
-		err := replica.Repeat(evch, etCtx)
+		err := replica.Repeat(evch, etCtx, binlog)
 
 		if err != nil {
 			log.Errorf("Faild to repeat binlog: %s", err)

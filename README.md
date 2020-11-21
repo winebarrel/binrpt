@@ -39,6 +39,7 @@ replicate_do_db = "test"
 replicate_ignore_tables = ["^secure_"]
 username = "tiger"
 #save_status = false
+#table_info_from_src = false
 ```
 
 ## Environment variables
