@@ -26,6 +26,7 @@ type ReplicaConfig struct {
 	ReplicateDoDB         string   `toml:"replicate_do_db"`
 	ReplicateIgnoreTables []string `toml:"replicate_ignore_tables"`
 	SaveStatus            bool     `toml:"save_status"`
+	TableInfoFromSrc      bool     `toml:"table_info_from_src"`
 }
 
 type Config struct {

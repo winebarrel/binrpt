@@ -44,7 +44,7 @@ func NewReplica(config *ReplicaConfig, dryrun bool) (*Replica, error) {
 	}, nil
 }
 
-func (replica *Replica) Repeat(evin chan Event, ctx context.Context) error {
+func (replica *Replica) Repeat(evin chan Event, ctx context.Context, binlog *Binlog) error {
 	_, cancel := context.WithCancel(ctx)
 	defer cancel()
 	conn, err := replica.Connect()
@@ -54,7 +54,20 @@ func (replica *Replica) Repeat(evin chan Event, ctx context.Context) error {
 	}
 
 	defer conn.Close()
-	tableInfo := NewTableInfo(conn)
+	var tableInfo *TableInfo
+
+	if replica.TableInfoFromSrc {
+		srcConn, err := binlog.Connect()
+
+		if err != nil {
+			return fmt.Errorf("Unable to connect to Source: %w", err)
+		}
+
+		defer srcConn.Close()
+		tableInfo = NewTableInfo(srcConn)
+	} else {
+		tableInfo = NewTableInfo(conn)
+	}
 
 	ticker := time.NewTicker(LogPosInterval)
 	defer ticker.Stop()
