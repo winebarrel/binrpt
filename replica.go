@@ -93,15 +93,15 @@ func (replica *Replica) Repeat(evin chan Event, ctx context.Context, binlog *Bin
 		select {
 		case <-ticker.C:
 			log.Infof("log_file=%s log_pos=%d", ev.File, ev.Header.LogPos)
-		default:
-		}
 
-		if replica.SaveStatus {
-			err = replica.saveBinlogFilePos(conn, ev.File, ev.Header.LogPos)
+			if replica.SaveStatus {
+				err = replica.saveBinlogFilePos(conn, ev.File, ev.Header.LogPos)
 
-			if err != nil {
-				return fmt.Errorf("Failed to save status: %w", err)
+				if err != nil {
+					return fmt.Errorf("Failed to save status: %w", err)
+				}
 			}
+		default:
 		}
 	}
 
