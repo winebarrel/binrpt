@@ -169,6 +169,8 @@ func (binlog *Binlog) startSync(file string, pos uint32, evout chan Event, ctx c
 			binlog.handleRowsEvent(ev, file, evout)
 		case replication.QUERY_EVENT:
 			binlog.handleQueryEvent(ev, file, evout)
+		case replication.TABLE_MAP_EVENT:
+			binlog.handleTableMapEvent(ev, file, evout)
 		case replication.ROTATE_EVENT:
 			rotateEvent := ev.Event.(*replication.RotateEvent)
 			file = string(rotateEvent.NextLogName)
@@ -191,6 +193,16 @@ func (binlog *Binlog) handleQueryEvent(ev *replication.BinlogEvent, file string,
 		File:       file,
 		Header:     ev.Header,
 		QueryEvent: ev.Event.(*replication.QueryEvent),
+	}
+
+	evout <- event
+}
+
+func (binlog *Binlog) handleTableMapEvent(ev *replication.BinlogEvent, file string, evout chan Event) {
+	event := Event{
+		File:          file,
+		Header:        ev.Header,
+		TableMapEvent: ev.Event.(*replication.TableMapEvent),
 	}
 
 	evout <- event
