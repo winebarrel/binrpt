@@ -10,9 +10,10 @@ import (
 )
 
 const (
-	DefaultPort       = 3306
-	BinlogStatusDB    = "binrpt"
-	BinlogStatusTable = "replica_status"
+	DefaultPort               = 3306
+	BinlogStatusDB            = "binrpt"
+	BinlogStatusTable         = "replica_status"
+	BinlogMapEventStatusTable = "replica_map_event_status"
 )
 
 type SourceConfig struct {

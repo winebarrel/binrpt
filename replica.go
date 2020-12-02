@@ -84,6 +84,8 @@ func (replica *Replica) Repeat(evin chan Event, ctx context.Context, binlog *Bin
 			err = replica.handleRowsEvent(conn, ev.Header, ev.RowsEvent, tableInfo)
 		} else if ev.QueryEvent != nil {
 			err = replica.handleQueryEvent(conn, ev.Header, ev.QueryEvent)
+		} else if ev.TableMapEvent != nil {
+			err = replica.handleTableMapEvent(conn, ev.Header, ev.File, ev.TableMapEvent)
 		}
 
 		if err != nil {
@@ -234,9 +236,32 @@ func (replica *Replica) handleQueryEvent(conn *sql.DB, header *replication.Event
 	return nil
 }
 
+func (replica *Replica) handleTableMapEvent(conn *sql.DB, header *replication.EventHeader, file string, _ev *replication.TableMapEvent) error {
+	var err error
+
+	if replica.SaveStatus {
+		err = replica.saveTableMapBinlogFilePos(conn, file, header.LogPos-header.EventSize)
+	}
+
+	return err
+}
+
 func (replica *Replica) saveBinlogFilePos(conn *sql.DB, file string, pos uint32) error {
 	_, err := conn.Exec(
 		"insert into "+BinlogStatusDB+"."+BinlogStatusTable+
+			" (id, file, position) values (1, ?, ?) on duplicate key update file = ?, position = ?",
+		file,
+		pos,
+		file,
+		pos,
+	)
+
+	return err
+}
+
+func (replica *Replica) saveTableMapBinlogFilePos(conn *sql.DB, file string, pos uint32) error {
+	_, err := conn.Exec(
+		"insert into "+BinlogStatusDB+"."+BinlogMapEventStatusTable+
 			" (id, file, position) values (1, ?, ?) on duplicate key update file = ?, position = ?",
 		file,
 		pos,
@@ -257,6 +282,34 @@ func (replica *Replica) LoadBinlogFilePos() (file string, pos uint32, err error)
 	defer conn.Close()
 
 	rows, err := conn.Query("select file, position from " + BinlogStatusDB + "." + BinlogStatusTable + " where id = 1")
+
+	if err != nil {
+		return
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(&file, &pos)
+
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (replica *Replica) LoadBinlogMapEventFilePos() (file string, pos uint32, err error) {
+	conn, err := replica.Connect()
+
+	if err != nil {
+		return
+	}
+
+	defer conn.Close()
+
+	rows, err := conn.Query("select file, position from " + BinlogStatusDB + "." + BinlogMapEventStatusTable + " where id = 1")
 
 	if err != nil {
 		return

@@ -6,3 +6,10 @@ CREATE TABLE IF NOT EXISTS `replica_status` (
   `position` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `replica_map_event_status` (
+  `id` int(11) NOT NULL,
+  `file` varchar(255) NOT NULL,
+  `position` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;

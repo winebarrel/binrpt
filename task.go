@@ -3,10 +3,16 @@ package binrpt
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/siddontang/go-log/log"
 
 	"golang.org/x/sync/errgroup"
+)
+
+const (
+	// https://github.com/siddontang/go-mysql/blob/v1.1.0/replication/row_event.go#L19
+	ErrMissingTableMapEventMessage = "invalid table id, no corresponding table map event"
 )
 
 type Task struct {
@@ -73,7 +79,22 @@ func (task *Task) Run(dryrun bool) error {
 
 	eg.Go(func() error {
 		defer close(evch)
-		return binlog.Receive(evch, etCtx, file, pos)
+		err := binlog.Receive(evch, etCtx, file, pos)
+
+		if strings.Contains(err.Error(), ErrMissingTableMapEventMessage) {
+			file, pos, loadErr := replica.LoadBinlogMapEventFilePos()
+
+			if loadErr != nil {
+				return loadErr
+			}
+			fmt.Println(file, pos)
+
+			if file != "" {
+				err = binlog.Receive(evch, etCtx, file, pos)
+			}
+		}
+
+		return err
 	})
 
 	return eg.Wait()
