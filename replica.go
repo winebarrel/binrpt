@@ -71,6 +71,8 @@ func (replica *Replica) Repeat(evin chan Event, ctx context.Context, binlog *Bin
 
 	ticker := time.NewTicker(LogPosInterval)
 	defer ticker.Stop()
+	var tmFile string
+	var tmPos uint32
 
 	for ev := range evin {
 		var err error
@@ -85,7 +87,8 @@ func (replica *Replica) Repeat(evin chan Event, ctx context.Context, binlog *Bin
 		} else if ev.QueryEvent != nil {
 			err = replica.handleQueryEvent(conn, ev.Header, ev.QueryEvent)
 		} else if ev.TableMapEvent != nil {
-			err = replica.handleTableMapEvent(conn, ev.Header, ev.File, ev.TableMapEvent)
+			tmFile = ev.File
+			tmPos = ev.Header.LogPos - ev.Header.EventSize
 		}
 
 		if err != nil {
@@ -97,10 +100,18 @@ func (replica *Replica) Repeat(evin chan Event, ctx context.Context, binlog *Bin
 			log.Infof("log_file=%s log_pos=%d", ev.File, ev.Header.LogPos)
 
 			if replica.SaveStatus {
-				err = replica.saveBinlogFilePos(conn, ev.File, ev.Header.LogPos)
+				err = replica.saveBinlogFilePos(conn, BinlogStatusTable, ev.File, ev.Header.LogPos)
 
 				if err != nil {
 					return fmt.Errorf("Failed to save status: %w", err)
+				}
+
+				if tmFile != "" {
+					err = replica.saveBinlogFilePos(conn, BinlogMapEventStatusTable, tmFile, tmPos)
+
+					if err != nil {
+						return fmt.Errorf("Failed to save TABLE_MAP_EVENT status: %w", err)
+					}
 				}
 			}
 		default:
@@ -236,32 +247,9 @@ func (replica *Replica) handleQueryEvent(conn *sql.DB, header *replication.Event
 	return nil
 }
 
-func (replica *Replica) handleTableMapEvent(conn *sql.DB, header *replication.EventHeader, file string, _ev *replication.TableMapEvent) error {
-	var err error
-
-	if replica.SaveStatus {
-		err = replica.saveTableMapBinlogFilePos(conn, file, header.LogPos-header.EventSize)
-	}
-
-	return err
-}
-
-func (replica *Replica) saveBinlogFilePos(conn *sql.DB, file string, pos uint32) error {
+func (replica *Replica) saveBinlogFilePos(conn *sql.DB, table string, file string, pos uint32) error {
 	_, err := conn.Exec(
-		"insert into "+BinlogStatusDB+"."+BinlogStatusTable+
-			" (id, file, position) values (1, ?, ?) on duplicate key update file = ?, position = ?",
-		file,
-		pos,
-		file,
-		pos,
-	)
-
-	return err
-}
-
-func (replica *Replica) saveTableMapBinlogFilePos(conn *sql.DB, file string, pos uint32) error {
-	_, err := conn.Exec(
-		"insert into "+BinlogStatusDB+"."+BinlogMapEventStatusTable+
+		"insert into "+BinlogStatusDB+"."+table+
 			" (id, file, position) values (1, ?, ?) on duplicate key update file = ?, position = ?",
 		file,
 		pos,
