@@ -135,7 +135,9 @@ func (sqlBld *SQLBuilder) buildWhereClause(values []interface{}) (string, []inte
 	builder.WriteString("WHERE ")
 
 	for i, v := range values {
+		builder.WriteString("`")
 		builder.WriteString(sqlBld.Table.ColumnNames[i])
+		builder.WriteString("`")
 
 		if v != nil {
 			builder.WriteString(" = ?")
