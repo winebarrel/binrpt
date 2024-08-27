@@ -2,7 +2,6 @@ package binrpt
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 
@@ -36,7 +35,7 @@ type Config struct {
 }
 
 func LoadConfig(path string) (config *Config, err error) {
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 
 	if err != nil {
 		return nil, err
